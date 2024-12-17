@@ -2,6 +2,9 @@
 
 A TLE handling (parsing, etc.) package for Go
 
+> [!WARNING]  
+> This package is not ready for use yet. It is still in development.
+
 ## Installation
 
 To install the package, run
