@@ -20,6 +20,10 @@ func TestTLEStringParse(t *testing.T) {
 
 			NoradId:        25544,
 			Classification: "U",
+
+			LaunchTwoDigitYear: "98",
+			LaunchNumber:       "067",
+			LaunchPiece:        "A",
 		}
 		got, err := Parse(tle)
 		assert.Nil(t, err)
@@ -46,6 +50,10 @@ ISS (ZARYA)
 
 			NoradId:        25544,
 			Classification: "U",
+
+			LaunchTwoDigitYear: "98",
+			LaunchNumber:       "067",
+			LaunchPiece:        "A",
 		}
 		got, err := Parse(tle)
 		assert.Nil(t, err)
@@ -63,6 +71,10 @@ ISS (ZARYA)
 
 			NoradId:        25544,
 			Classification: "U",
+
+			LaunchTwoDigitYear: "98",
+			LaunchNumber:       "067",
+			LaunchPiece:        "A",
 		}
 		got, err := Parse(tle)
 		assert.Nil(t, err)
