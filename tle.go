@@ -73,7 +73,7 @@ func Parse(txt string) (TLE, error) {
 
 	result.LaunchTwoDigitYear = result.Line1[9:11]
 	result.LaunchNumber = result.Line1[11:14]
-	result.LaunchPiece = result.Line1[14:17]
+	result.LaunchPiece = strings.TrimSpace(result.Line1[14:17])
 
 	// TODO: finish parsing the rest of the fields
 
