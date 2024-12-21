@@ -140,3 +140,28 @@ func Parse(txt string) (TLE, error) {
 
 	return result, nil
 }
+
+func convertYearAndDayToDate(twoDigitYear, day string) (time.Time, error) {
+	// convert the two-digit year to a four-digit year
+	year, err := strconv.Atoi(twoDigitYear)
+	if err != nil {
+		return time.Time{}, err
+	}
+	if year < 57 {
+		year += 2000
+	} else {
+		year += 1900
+	}
+
+	// convert decimal day to decimal hours
+	dayFloat, err := strconv.ParseFloat(day, 64)
+	if err != nil {
+		return time.Time{}, err
+	}
+
+	nanosecondsFloat := dayFloat * 24.0 * 60.0 * 60.0 * 1e9
+	ns := time.Duration(nanosecondsFloat)
+
+	// subtract a day the .Date adds a day
+	return time.Date(year, 1, 1, 0, 0, 0, 0, time.UTC).Add(ns).Add(-time.Hour * 24), nil
+}

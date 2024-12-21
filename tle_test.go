@@ -2,6 +2,7 @@ package tle
 
 import (
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -22,6 +23,7 @@ func TestTLEStringParse(t *testing.T) {
 
 		EpochYear: "20",
 		EpochDay:  "274.51782528",
+		// Epoch:     time.Date(2020, 10, 1, 12, 25, 0, 0, time.UTC),
 
 		MeanMotionFirstDerivative:  ".00000867",
 		MeanMotionSecondDerivative: "00000-0",
@@ -83,5 +85,35 @@ ISS (ZARYA)
 		got, err := Parse(tle)
 		assert.Nil(t, err)
 		assert.Equal(t, localExpected, got)
+	})
+}
+
+func TestYearAndDayToDate(t *testing.T) {
+	t.Run("Normal", func(t *testing.T) {
+		// 2015-01-22 23:14:41.065743
+		year := "15"
+		day := "22.968530853511766"
+
+		expected := time.Date(2015, 1, 22, 23, 14, 41, 65743000, time.UTC)
+		got, err := convertYearAndDayToDate(year, day)
+
+		assert.Nil(t, err)
+		assert.WithinRange(t, got, expected.Add(-time.Microsecond), expected.Add(time.Microsecond))
+	})
+
+	t.Run("Invalid year", func(t *testing.T) {
+		year := "20a"
+		day := "274.51782528"
+
+		_, err := convertYearAndDayToDate(year, day)
+		assert.NotNil(t, err)
+	})
+
+	t.Run("Invalid day", func(t *testing.T) {
+		year := "20"
+		day := "274.51782528a"
+
+		_, err := convertYearAndDayToDate(year, day)
+		assert.NotNil(t, err)
 	})
 }
