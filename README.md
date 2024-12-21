@@ -3,6 +3,8 @@
 
 # tle
 
+[![Go Reference](https://pkg.go.dev/badge/github.com/cprosche/tle.svg)](https://pkg.go.dev/github.com/cprosche/tle)
+
 A TLE handling package for Go
 
 <!-- TODO: add usage examples -->
