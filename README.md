@@ -1,25 +1,25 @@
-# tle
-
-A TLE handling (parsing, etc.) package for Go
-
 > [!WARNING]  
 > This package is not ready for use yet. It is still in development.
 
+# tle
+
+A TLE handling package for Go
+
+<!-- TODO: add usage examples -->
+<!-- TODO: add better description of what TLEs and 3LEs are -->
+
 ## Installation
 
-To install the package, run
+To use the package, run:
 
 ```bash
 go get github.com/cprosche/tle
 ```
 
-## What is a TLE?
+## References
 
-A TLE (Two-Line Element Set) is a data format used to convey sets of orbital elements that describe the orbits of Earth-orbiting satellites. A TLE set consists of two lines of data. The first line is called the "title line" and the second line is called the "data line". The title line contains the name of the satellite and a timestamp. The data line contains the orbital elements.
-
-## Source
-
-Format description: https://en.wikipedia.org/wiki/Two-line_element_set
+- https://www.space-track.org/documentation#tle
+- https://en.wikipedia.org/wiki/Two-line_element_set
 
 ## License
 
