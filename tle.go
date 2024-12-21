@@ -8,9 +8,10 @@ import (
 )
 
 type TLE struct {
-	Name  string
-	Line1 string
-	Line2 string
+	Name     string
+	Line1    string
+	Line2    string
+	Contents string
 
 	// line 1
 	NoradId        int
@@ -24,6 +25,7 @@ type TLE struct {
 	EpochDay  string
 	Epoch     time.Time
 
+	// TODO: change these to float64
 	MeanMotionFirstDerivative  string
 	MeanMotionSecondDerivative string
 
@@ -45,9 +47,14 @@ type TLE struct {
 	Line2Checksum int
 }
 
+// TODO: validate checksums
+// TODO: support Alpha-5 format
+// TODO: handle negatives
+
 func Parse(txt string) (TLE, error) {
 	result := TLE{}
 	txt = strings.TrimSpace(txt)
+	result.Contents = txt
 	lines := strings.Split(txt, "\n")
 
 	switch len(lines) {
@@ -69,16 +76,18 @@ func Parse(txt string) (TLE, error) {
 	}
 	result.NoradId = noradId
 
-	// TODO: should we validate the classification?
 	result.Classification = result.Line1[7:8]
 
 	result.LaunchTwoDigitYear = result.Line1[9:11]
 	result.LaunchNumber = result.Line1[11:14]
 	result.LaunchPiece = strings.TrimSpace(result.Line1[14:17])
 
-	// TODO: finish parsing the rest of the fields
 	result.EpochYear = result.Line1[18:20]
 	result.EpochDay = result.Line1[20:32]
+	result.Epoch, err = convertYearAndDayToDate(result.EpochYear, result.EpochDay)
+	if err != nil {
+		return TLE{}, err
+	}
 
 	result.MeanMotionFirstDerivative = result.Line1[34:43]
 	result.MeanMotionSecondDerivative = result.Line1[45:52]

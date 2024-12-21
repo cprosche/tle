@@ -13,6 +13,9 @@ func TestTLEStringParse(t *testing.T) {
 		Name:  "ISS (ZARYA)",
 		Line1: "1 25544U 98067A   20274.51782528  .00000867  00000-0  22813-4 0  9991",
 		Line2: "2 25544  51.6441  93.0000 0001400  11.0000 349.0000 15.49300070250768",
+		Contents: `ISS (ZARYA)
+1 25544U 98067A   20274.51782528  .00000867  00000-0  22813-4 0  9991
+2 25544  51.6441  93.0000 0001400  11.0000 349.0000 15.49300070250768`,
 
 		NoradId:        25544,
 		Classification: "U",
@@ -23,7 +26,7 @@ func TestTLEStringParse(t *testing.T) {
 
 		EpochYear: "20",
 		EpochDay:  "274.51782528",
-		// Epoch:     time.Date(2020, 10, 1, 12, 25, 0, 0, time.UTC),
+		Epoch:     time.Date(2020, 9, 30, 12, 25, 40, 104192000, time.UTC),
 
 		MeanMotionFirstDerivative:  ".00000867",
 		MeanMotionSecondDerivative: "00000-0",
@@ -80,6 +83,8 @@ ISS (ZARYA)
 	`
 
 		localExpected := expected
+		localExpected.Contents = `1 25544U 98067A   20274.51782528  .00000867  00000-0  22813-4 0  9991
+2 25544  51.6441  93.0000 0001400  11.0000 349.0000 15.49300070250768`
 		localExpected.Name = ""
 
 		got, err := Parse(tle)
@@ -90,15 +95,23 @@ ISS (ZARYA)
 
 func TestYearAndDayToDate(t *testing.T) {
 	t.Run("Normal", func(t *testing.T) {
-		// 2015-01-22 23:14:41.065743
 		year := "15"
 		day := "22.968530853511766"
 
-		expected := time.Date(2015, 1, 22, 23, 14, 41, 65743000, time.UTC)
+		expected := time.Date(2015, 1, 22, 23, 14, 41, 65743416, time.UTC)
 		got, err := convertYearAndDayToDate(year, day)
 
 		assert.Nil(t, err)
-		assert.WithinRange(t, got, expected.Add(-time.Microsecond), expected.Add(time.Microsecond))
+		assert.Equal(t, got, expected)
+
+		year = "20"
+		day = "274.51782528"
+
+		expected = time.Date(2020, 9, 30, 12, 25, 40, 104192000, time.UTC)
+		got, err = convertYearAndDayToDate(year, day)
+
+		assert.Nil(t, err)
+		assert.Equal(t, got, expected)
 	})
 
 	t.Run("Invalid year", func(t *testing.T) {
