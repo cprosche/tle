@@ -47,7 +47,6 @@ type TLE struct {
 	Line2Checksum int
 }
 
-// TODO: validate checksums
 // TODO: support Alpha-5 format
 // TODO: handle negatives
 
@@ -147,6 +146,14 @@ func Parse(txt string) (TLE, error) {
 		return TLE{}, err
 	}
 
+	if !isChecksumValid(result.Line1) {
+		return TLE{}, errors.New("line 1 checksum is invalid")
+	}
+
+	if !isChecksumValid(result.Line2) {
+		return TLE{}, errors.New("line 2 checksum is invalid")
+	}
+
 	return result, nil
 }
 
@@ -173,4 +180,50 @@ func convertYearAndDayToDate(twoDigitYear, day string) (time.Time, error) {
 
 	// subtract a day the .Date adds a day
 	return time.Date(year, 1, 1, 0, 0, 0, 0, time.UTC).Add(ns).Add(-time.Hour * 24), nil
+}
+
+func isChecksumValid(line string) bool {
+	providedChecksum, err := strconv.Atoi(string(line[len(line)-1]))
+	if err != nil {
+		return false
+	}
+
+	calculatedChecksum := calculateChecksum(line[:len(line)-1])
+
+	return providedChecksum == calculatedChecksum
+}
+
+func calculateChecksum(line string) int {
+	// The checksum is the sum of all characters in the data line, modulo 10.
+	// In this formula, the following non-numeric characters are assigned the indicated values:
+	// Blanks, periods, letters, '+' signs: 0
+	// '-' signs: 1
+
+	result := 0
+	for _, r := range line {
+		switch r {
+		case '0':
+			result += 0
+		case '1', '-':
+			result += 1
+		case '2':
+			result += 2
+		case '3':
+			result += 3
+		case '4':
+			result += 4
+		case '5':
+			result += 5
+		case '6':
+			result += 6
+		case '7':
+			result += 7
+		case '8':
+			result += 8
+		case '9':
+			result += 9
+		}
+	}
+
+	return result % 10
 }
