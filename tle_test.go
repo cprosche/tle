@@ -20,18 +20,20 @@ func TestTLEStringParse(t *testing.T) {
 		NoradId:        25544,
 		Classification: "U",
 
-		LaunchTwoDigitYear: "98",
-		LaunchNumber:       "067",
-		LaunchPiece:        "A",
+		InternationalDesignator: "98067A",
+		LaunchTwoDigitYear:      "98",
+		LaunchNumber:            "067",
+		LaunchPiece:             "A",
 
-		EpochYear: "20",
-		EpochDay:  "274.51782528",
-		Epoch:     time.Date(2020, 9, 30, 12, 25, 40, 104192000, time.UTC),
+		ElementSetEpoch: "20274.51782528",
+		EpochYear:       "20",
+		EpochDay:        "274.51782528",
+		Epoch:           time.Date(2020, 9, 30, 12, 25, 40, 104192000, time.UTC),
 
-		MeanMotionFirstDerivative:  ".00000867",
-		MeanMotionSecondDerivative: "00000-0",
+		MeanMotionFirstDerivative:  0.00000867,
+		MeanMotionSecondDerivative: 0.00000e-0,
 
-		BStar: "22813-4",
+		BStar: 0.22813e-4,
 
 		EphemerisType:    "0",
 		ElementSetNumber: 999,
@@ -59,8 +61,6 @@ func TestTLEStringParse(t *testing.T) {
 	})
 
 	t.Run("Parse another normal", func(t *testing.T) {
-		t.Skip("This test is failing because we don't handle negatives correctly")
-
 		tle := `ISS (ZARYA)
 1 25544U 98067A   08264.51782528 -.00002182  00000-0 -11606-4 0  2927
 2 25544  51.6416 247.4627 0006703 130.5360 325.0288 15.72125391563537`
@@ -75,18 +75,20 @@ func TestTLEStringParse(t *testing.T) {
 			NoradId:        25544,
 			Classification: "U",
 
-			LaunchTwoDigitYear: "98",
-			LaunchNumber:       "067",
-			LaunchPiece:        "A",
+			InternationalDesignator: "98067A",
+			LaunchTwoDigitYear:      "98",
+			LaunchNumber:            "067",
+			LaunchPiece:             "A",
 
-			EpochYear: "08",
-			EpochDay:  "264.51782528",
-			Epoch:     time.Date(2008, 9, 30, 12, 25, 40, 104192000, time.UTC),
+			ElementSetEpoch: "08264.51782528",
+			EpochYear:       "08",
+			EpochDay:        "264.51782528",
+			Epoch:           time.Date(2008, 9, 20, 12, 25, 40, 104192000, time.UTC),
 
-			MeanMotionFirstDerivative:  "-.00002182",
-			MeanMotionSecondDerivative: "00000-0",
+			MeanMotionFirstDerivative:  -0.00002182,
+			MeanMotionSecondDerivative: 0.00000e-0,
 
-			BStar: "-11606-4",
+			BStar: -0.11606e-4,
 
 			EphemerisType:    "0",
 			ElementSetNumber: 292,
@@ -212,6 +214,40 @@ func TestCalculateChecksum(t *testing.T) {
 		line = "2 25544  51.6416 247.4627 0006703 130.5360 325.0288 15.7212539156353"
 
 		got = calculateChecksum(line)
+		assert.Equal(t, expected, got)
+	})
+}
+
+func TestParseBStar(t *testing.T) {
+	t.Run("Positive", func(t *testing.T) {
+		bstar := "22813-4"
+		expected := 0.000022813
+		got, err := parseBStar(bstar)
+		assert.Nil(t, err)
+		assert.Equal(t, expected, got)
+	})
+
+	t.Run("Positive sign", func(t *testing.T) {
+		bstar := "+22813-4"
+		expected := 0.000022813
+		got, err := parseBStar(bstar)
+		assert.Nil(t, err)
+		assert.Equal(t, expected, got)
+	})
+
+	t.Run("Positive space", func(t *testing.T) {
+		bstar := " 22813-4"
+		expected := 0.000022813
+		got, err := parseBStar(bstar)
+		assert.Nil(t, err)
+		assert.Equal(t, expected, got)
+	})
+
+	t.Run("Negative", func(t *testing.T) {
+		bstar := "-22813-4"
+		expected := -0.000022813
+		got, err := parseBStar(bstar)
+		assert.Nil(t, err)
 		assert.Equal(t, expected, got)
 	})
 }
