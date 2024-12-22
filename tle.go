@@ -14,6 +14,7 @@ type TLE struct {
 	Contents string
 
 	// line 1
+	NoradIdStr     string
 	NoradId        int
 	Classification string
 
@@ -48,13 +49,15 @@ type TLE struct {
 	Line2Checksum int
 }
 
-// TODO: support Alpha-5 format
-
 func Parse(txt string) (TLE, error) {
-	result := TLE{}
-	txt = strings.TrimSpace(txt)
-	result.Contents = txt
-	lines := strings.Split(txt, "\n")
+	var (
+		trimmedTxt = strings.TrimSpace(txt)
+		lines      = strings.Split(trimmedTxt, "\n")
+		err        error
+		result     = TLE{}
+	)
+
+	result.Contents = trimmedTxt
 
 	switch len(lines) {
 	case 2:
@@ -65,15 +68,77 @@ func Parse(txt string) (TLE, error) {
 		result.Line1 = lines[1]
 		result.Line2 = lines[2]
 	default:
-		return TLE{}, errors.New("invalid TLE, must have 2 or 3 lines:\n" + txt)
+		return TLE{}, errors.New("invalid TLE, must have 2 or 3 lines:\n" + trimmedTxt)
 	}
 
 	// Parse the NORAD ID from the first line
-	noradId, err := strconv.Atoi(result.Line1[2:7])
-	if err != nil {
-		return TLE{}, err
+	result.NoradIdStr = result.Line1[2:7]
+	if _, err := strconv.Atoi(string(result.NoradIdStr[0])); err == nil {
+		noradInt, err := strconv.Atoi(result.NoradIdStr)
+		if err != nil {
+			return TLE{}, err
+		}
+		result.NoradId = noradInt
+	} else {
+		rest := result.NoradIdStr[1:]
+		firstChar := result.NoradIdStr[0]
+		switch firstChar {
+		case 'A':
+			result.NoradId, err = strconv.Atoi("10" + rest)
+		case 'B':
+			result.NoradId, err = strconv.Atoi("11" + rest)
+		case 'C':
+			result.NoradId, err = strconv.Atoi("12" + rest)
+		case 'D':
+			result.NoradId, err = strconv.Atoi("13" + rest)
+		case 'E':
+			result.NoradId, err = strconv.Atoi("14" + rest)
+		case 'F':
+			result.NoradId, err = strconv.Atoi("15" + rest)
+		case 'G':
+			result.NoradId, err = strconv.Atoi("16" + rest)
+		case 'H':
+			result.NoradId, err = strconv.Atoi("17" + rest)
+		case 'J':
+			result.NoradId, err = strconv.Atoi("18" + rest)
+		case 'K':
+			result.NoradId, err = strconv.Atoi("19" + rest)
+		case 'L':
+			result.NoradId, err = strconv.Atoi("20" + rest)
+		case 'M':
+			result.NoradId, err = strconv.Atoi("21" + rest)
+		case 'N':
+			result.NoradId, err = strconv.Atoi("22" + rest)
+		case 'P':
+			result.NoradId, err = strconv.Atoi("23" + rest)
+		case 'Q':
+			result.NoradId, err = strconv.Atoi("24" + rest)
+		case 'R':
+			result.NoradId, err = strconv.Atoi("25" + rest)
+		case 'S':
+			result.NoradId, err = strconv.Atoi("26" + rest)
+		case 'T':
+			result.NoradId, err = strconv.Atoi("27" + rest)
+		case 'U':
+			result.NoradId, err = strconv.Atoi("28" + rest)
+		case 'V':
+			result.NoradId, err = strconv.Atoi("29" + rest)
+		case 'W':
+			result.NoradId, err = strconv.Atoi("30" + rest)
+		case 'X':
+			result.NoradId, err = strconv.Atoi("31" + rest)
+		case 'Y':
+			result.NoradId, err = strconv.Atoi("32" + rest)
+		case 'Z':
+			result.NoradId, err = strconv.Atoi("33" + rest)
+		default:
+			return TLE{}, errors.New("invalid NORAD ID Alpha-5 format")
+		}
+
+		if err != nil {
+			return TLE{}, err
+		}
 	}
-	result.NoradId = noradId
 
 	result.Classification = result.Line1[7:8]
 
@@ -117,11 +182,8 @@ func Parse(txt string) (TLE, error) {
 	}
 
 	// line 2
-	secondNoradId, err := strconv.Atoi(result.Line2[2:7])
-	if err != nil {
-		return TLE{}, err
-	}
-	if secondNoradId != result.NoradId {
+	secondNoradIdStr := result.Line2[2:7]
+	if secondNoradIdStr != result.NoradIdStr {
 		return TLE{}, errors.New("line 1 and line 2 NORAD IDs do not match")
 	}
 

@@ -17,6 +17,7 @@ func TestTLEStringParse(t *testing.T) {
 1 25544U 98067A   20274.51782528  .00000867  00000-0  22813-4 0  9994
 2 25544  51.6441  93.0000 0001400  11.0000 349.0000 15.49300070250767`,
 
+		NoradIdStr:     "25544",
 		NoradId:        25544,
 		Classification: "U",
 
@@ -72,6 +73,8 @@ func TestTLEStringParse(t *testing.T) {
 			Contents: `ISS (ZARYA)
 1 25544U 98067A   08264.51782528 -.00002182  00000-0 -11606-4 0  2927
 2 25544  51.6416 247.4627 0006703 130.5360 325.0288 15.72125391563537`,
+
+			NoradIdStr:     "25544",
 			NoradId:        25544,
 			Classification: "U",
 
@@ -103,6 +106,58 @@ func TestTLEStringParse(t *testing.T) {
 			EpochRevolutionCount:   56353,
 
 			Line2Checksum: 7,
+		}
+
+		got, err := Parse(tle)
+		assert.Nil(t, err)
+		assert.Equal(t, localExpected, got)
+	})
+
+	t.Run("Parse alpha 5", func(t *testing.T) {
+		tle := `ISS (ZARYA)
+1 Z5544U 98067A   08264.51782528 -.00002182  00000-0 -11606-4 0  2925
+2 Z5544  51.6416 247.4627 0006703 130.5360 325.0288 15.72125391563535`
+
+		localExpected := TLE{
+			Name:  "ISS (ZARYA)",
+			Line1: "1 Z5544U 98067A   08264.51782528 -.00002182  00000-0 -11606-4 0  2925",
+			Line2: "2 Z5544  51.6416 247.4627 0006703 130.5360 325.0288 15.72125391563535",
+			Contents: `ISS (ZARYA)
+1 Z5544U 98067A   08264.51782528 -.00002182  00000-0 -11606-4 0  2925
+2 Z5544  51.6416 247.4627 0006703 130.5360 325.0288 15.72125391563535`,
+
+			NoradIdStr:     "Z5544",
+			NoradId:        335544,
+			Classification: "U",
+
+			InternationalDesignator: "98067A",
+			LaunchTwoDigitYear:      "98",
+			LaunchNumber:            "067",
+			LaunchPiece:             "A",
+
+			ElementSetEpoch: "08264.51782528",
+			EpochYear:       "08",
+			EpochDay:        "264.51782528",
+			Epoch:           time.Date(2008, 9, 20, 12, 25, 40, 104192000, time.UTC),
+
+			MeanMotionFirstDerivative:  -0.00002182,
+			MeanMotionSecondDerivative: 0.00000e-0,
+
+			BStar: -0.11606e-4,
+
+			EphemerisType:    "0",
+			ElementSetNumber: 292,
+			Line1Checksum:    5,
+
+			InclinationDegrees:     51.6416,
+			RightAscensionDegrees:  247.4627,
+			Eccentricity:           0.0006703,
+			PerigeeArgumentDegrees: 130.5360,
+			MeanAnomalyDegrees:     325.0288,
+			MeanMotion:             15.72125391,
+			EpochRevolutionCount:   56353,
+
+			Line2Checksum: 5,
 		}
 
 		got, err := Parse(tle)
