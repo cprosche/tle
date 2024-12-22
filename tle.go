@@ -49,7 +49,6 @@ type TLE struct {
 }
 
 // TODO: support Alpha-5 format
-// TODO: handle negatives
 
 func Parse(txt string) (TLE, error) {
 	result := TLE{}
