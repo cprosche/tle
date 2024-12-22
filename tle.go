@@ -7,6 +7,9 @@ import (
 	"time"
 )
 
+// TLE represents a Two-Line Element set.
+// Use the Parse() function to create a TLE from a string (text file).
+// Visit https://en.wikipedia.org/wiki/Two-line_element_set for more information.
 type TLE struct {
 	Name     string
 	Line1    string
@@ -49,6 +52,12 @@ type TLE struct {
 	Line2Checksum int
 }
 
+// Parses TLE (2LE) and 3LE formats.
+// Features:
+// - Supports Alpha 5 format
+// - Validates the checksums
+// - Converts the epoch to a time.Time
+// - Converts numbers to correct type
 func Parse(txt string) (TLE, error) {
 	var (
 		trimmedTxt = strings.TrimSpace(txt)
