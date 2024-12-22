@@ -17,19 +17,20 @@ type TLE struct {
 	NoradId        int
 	Classification string
 
-	LaunchTwoDigitYear string
-	LaunchNumber       string
-	LaunchPiece        string
+	InternationalDesignator string
+	LaunchTwoDigitYear      string
+	LaunchNumber            string
+	LaunchPiece             string
 
-	EpochYear string
-	EpochDay  string
-	Epoch     time.Time
+	ElementSetEpoch string
+	EpochYear       string
+	EpochDay        string
+	Epoch           time.Time
 
-	// TODO: change these to float64
-	MeanMotionFirstDerivative  string
-	MeanMotionSecondDerivative string
+	MeanMotionFirstDerivative  float64
+	MeanMotionSecondDerivative float64
 
-	BStar string
+	BStar float64
 
 	EphemerisType    string
 	ElementSetNumber int
@@ -77,10 +78,12 @@ func Parse(txt string) (TLE, error) {
 
 	result.Classification = result.Line1[7:8]
 
+	result.InternationalDesignator = strings.TrimSpace(result.Line1[9:17])
 	result.LaunchTwoDigitYear = result.Line1[9:11]
 	result.LaunchNumber = result.Line1[11:14]
 	result.LaunchPiece = strings.TrimSpace(result.Line1[14:17])
 
+	result.ElementSetEpoch = result.Line1[18:32]
 	result.EpochYear = result.Line1[18:20]
 	result.EpochDay = result.Line1[20:32]
 	result.Epoch, err = convertYearAndDayToDate(result.EpochYear, result.EpochDay)
@@ -88,13 +91,23 @@ func Parse(txt string) (TLE, error) {
 		return TLE{}, err
 	}
 
-	result.MeanMotionFirstDerivative = result.Line1[34:43]
-	result.MeanMotionSecondDerivative = result.Line1[45:52]
+	result.MeanMotionFirstDerivative, err = strconv.ParseFloat(strings.TrimSpace(result.Line1[33:43]), 64)
+	if err != nil {
+		return TLE{}, err
+	}
 
-	result.BStar = result.Line1[54:61]
+	result.MeanMotionSecondDerivative, err = parseBStar(result.Line1[44:52])
+	if err != nil {
+		return TLE{}, err
+	}
+
+	result.BStar, err = parseBStar(result.Line1[53:61])
+	if err != nil {
+		return TLE{}, err
+	}
 
 	result.EphemerisType = result.Line1[62:63]
-	result.ElementSetNumber, err = strconv.Atoi(result.Line1[65:68])
+	result.ElementSetNumber, err = strconv.Atoi(strings.TrimSpace(result.Line1[64:68]))
 	if err != nil {
 		return TLE{}, err
 	}
@@ -104,13 +117,21 @@ func Parse(txt string) (TLE, error) {
 		return TLE{}, err
 	}
 
-	// Parse the rest of the fields from the second line
-	result.InclinationDegrees, err = strconv.ParseFloat(result.Line2[9:16], 64)
+	// line 2
+	secondNoradId, err := strconv.Atoi(result.Line2[2:7])
+	if err != nil {
+		return TLE{}, err
+	}
+	if secondNoradId != result.NoradId {
+		return TLE{}, errors.New("line 1 and line 2 NORAD IDs do not match")
+	}
+
+	result.InclinationDegrees, err = strconv.ParseFloat(strings.TrimSpace(result.Line2[8:16]), 64)
 	if err != nil {
 		return TLE{}, err
 	}
 
-	result.RightAscensionDegrees, err = strconv.ParseFloat(result.Line2[18:25], 64)
+	result.RightAscensionDegrees, err = strconv.ParseFloat(strings.TrimSpace(result.Line2[17:25]), 64)
 	if err != nil {
 		return TLE{}, err
 	}
@@ -121,7 +142,7 @@ func Parse(txt string) (TLE, error) {
 		return TLE{}, err
 	}
 
-	result.PerigeeArgumentDegrees, err = strconv.ParseFloat(result.Line2[35:42], 64)
+	result.PerigeeArgumentDegrees, err = strconv.ParseFloat(strings.TrimSpace(result.Line2[34:42]), 64)
 	if err != nil {
 		return TLE{}, err
 	}
@@ -226,4 +247,28 @@ func calculateChecksum(line string) int {
 	}
 
 	return result % 10
+}
+
+func parseBStar(bstar string) (float64, error) {
+	var (
+		sign     string
+		val      string
+		exponent string
+	)
+
+	bstar = strings.TrimSpace(bstar)
+	switch bstar[0] {
+	case '+', '-':
+		sign = string(bstar[0])
+		val = bstar[1:6]
+		exponent = bstar[6:8]
+	default:
+		sign = "+"
+		val = bstar[0:5]
+		exponent = bstar[5:7]
+	}
+
+	parseableStr := sign + "0." + val + "e" + exponent
+
+	return strconv.ParseFloat(parseableStr, 64)
 }
