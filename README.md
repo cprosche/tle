@@ -7,6 +7,13 @@
 
 A TLE handling package for Go
 
+## Features
+
+- Provides TLE type
+- Parses TLEs and 3LEs
+- Validates checksums
+- Supports Alpha 5 format
+
 <!-- TODO: add usage examples -->
 <!-- TODO: add better description of what TLEs and 3LEs are -->
 
