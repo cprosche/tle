@@ -11,45 +11,45 @@ import (
 // Use the Parse() function to create a TLE from a string (text file).
 // Visit https://en.wikipedia.org/wiki/Two-line_element_set for more information.
 type TLE struct {
-	Name     string
-	Line1    string
-	Line2    string
-	Contents string
+	Name     string `json:"name"`
+	Line1    string `json:"line1"`
+	Line2    string `json:"line2"`
+	Contents string `json:"contents"`
 
 	// line 1
-	NoradIdStr     string
-	NoradId        int
-	Classification string
+	NoradIdStr     string `json:"noradIdStr"`
+	NoradId        int    `json:"noradId"`
+	Classification string `json:"classification"`
 
-	InternationalDesignator string
-	LaunchTwoDigitYear      string
-	LaunchNumber            string
-	LaunchPiece             string
+	InternationalDesignator string `json:"internationalDesignator"`
+	LaunchTwoDigitYear      string `json:"launchTwoDigitYear"`
+	LaunchNumber            string `json:"launchNumber"`
+	LaunchPiece             string `json:"launchPiece"`
 
-	ElementSetEpoch string
-	EpochYear       string
-	EpochDay        string
-	Epoch           time.Time
+	ElementSetEpoch string    `json:"elementSetEpoch"`
+	EpochYear       string    `json:"epochYear"`
+	EpochDay        string    `json:"epochDay"`
+	Epoch           time.Time `json:"epoch"`
 
-	MeanMotionFirstDerivative  float64
-	MeanMotionSecondDerivative float64
+	MeanMotionFirstDerivative  float64 `json:"meanMotionFirstDerivative"`
+	MeanMotionSecondDerivative float64 `json:"meanMotionSecondDerivative"`
 
-	BStar float64
+	BStar float64 `json:"bStar"`
 
-	EphemerisType    string
-	ElementSetNumber int
-	Line1Checksum    int
+	EphemerisType    string `json:"ephemerisType"`
+	ElementSetNumber int    `json:"elementSetNumber"`
+	Line1Checksum    int    `json:"line1Checksum"`
 
 	// line 2
-	InclinationDegrees     float64
-	RightAscensionDegrees  float64
-	Eccentricity           float64
-	PerigeeArgumentDegrees float64
-	MeanAnomalyDegrees     float64
-	MeanMotion             float64
-	EpochRevolutionCount   int
+	InclinationDegrees     float64 `json:"inclinationDegrees"`
+	RightAscensionDegrees  float64 `json:"rightAscensionDegrees"`
+	Eccentricity           float64 `json:"eccentricity"`
+	PerigeeArgumentDegrees float64 `json:"perigeeArgumentDegrees"`
+	MeanAnomalyDegrees     float64 `json:"meanAnomalyDegrees"`
+	MeanMotion             float64 `json:"meanMotion"`
+	EpochRevolutionCount   int     `json:"epochRevolutionCount"`
 
-	Line2Checksum int
+	Line2Checksum int `json:"line2Checksum"`
 }
 
 // Parses TLE (2LE) and 3LE formats.
