@@ -53,11 +53,7 @@ type TLE struct {
 }
 
 // Parses TLE (2LE) and 3LE formats.
-// Features:
-// - Supports Alpha 5 format
-// - Validates the checksums
-// - Converts the epoch to a time.Time
-// - Converts numbers to correct type
+// Features: Supports Alpha 5 format, validates the checksums, converts the epoch to a time.Time, converts numbers to correct type
 func Parse(txt string) (TLE, error) {
 	var (
 		trimmedTxt = strings.TrimSpace(txt)
@@ -81,72 +77,10 @@ func Parse(txt string) (TLE, error) {
 	}
 
 	// Parse the NORAD ID from the first line
-	result.NoradIdStr = result.Line1[2:7]
-	if _, err := strconv.Atoi(string(result.NoradIdStr[0])); err == nil {
-		noradInt, err := strconv.Atoi(result.NoradIdStr)
-		if err != nil {
-			return TLE{}, err
-		}
-		result.NoradId = noradInt
-	} else {
-		rest := result.NoradIdStr[1:]
-		firstChar := result.NoradIdStr[0]
-		switch firstChar {
-		case 'A':
-			result.NoradId, err = strconv.Atoi("10" + rest)
-		case 'B':
-			result.NoradId, err = strconv.Atoi("11" + rest)
-		case 'C':
-			result.NoradId, err = strconv.Atoi("12" + rest)
-		case 'D':
-			result.NoradId, err = strconv.Atoi("13" + rest)
-		case 'E':
-			result.NoradId, err = strconv.Atoi("14" + rest)
-		case 'F':
-			result.NoradId, err = strconv.Atoi("15" + rest)
-		case 'G':
-			result.NoradId, err = strconv.Atoi("16" + rest)
-		case 'H':
-			result.NoradId, err = strconv.Atoi("17" + rest)
-		case 'J':
-			result.NoradId, err = strconv.Atoi("18" + rest)
-		case 'K':
-			result.NoradId, err = strconv.Atoi("19" + rest)
-		case 'L':
-			result.NoradId, err = strconv.Atoi("20" + rest)
-		case 'M':
-			result.NoradId, err = strconv.Atoi("21" + rest)
-		case 'N':
-			result.NoradId, err = strconv.Atoi("22" + rest)
-		case 'P':
-			result.NoradId, err = strconv.Atoi("23" + rest)
-		case 'Q':
-			result.NoradId, err = strconv.Atoi("24" + rest)
-		case 'R':
-			result.NoradId, err = strconv.Atoi("25" + rest)
-		case 'S':
-			result.NoradId, err = strconv.Atoi("26" + rest)
-		case 'T':
-			result.NoradId, err = strconv.Atoi("27" + rest)
-		case 'U':
-			result.NoradId, err = strconv.Atoi("28" + rest)
-		case 'V':
-			result.NoradId, err = strconv.Atoi("29" + rest)
-		case 'W':
-			result.NoradId, err = strconv.Atoi("30" + rest)
-		case 'X':
-			result.NoradId, err = strconv.Atoi("31" + rest)
-		case 'Y':
-			result.NoradId, err = strconv.Atoi("32" + rest)
-		case 'Z':
-			result.NoradId, err = strconv.Atoi("33" + rest)
-		default:
-			return TLE{}, errors.New("invalid NORAD ID Alpha-5 format")
-		}
-
-		if err != nil {
-			return TLE{}, err
-		}
+	result.NoradIdStr = strings.TrimSpace(result.Line1[2:7])
+	result.NoradId, err = parseNoradId(result.NoradIdStr)
+	if err != nil {
+		return TLE{}, err
 	}
 
 	result.Classification = result.Line1[7:8]
@@ -191,7 +125,7 @@ func Parse(txt string) (TLE, error) {
 	}
 
 	// line 2
-	secondNoradIdStr := result.Line2[2:7]
+	secondNoradIdStr := strings.TrimSpace(result.Line2[2:7])
 	if secondNoradIdStr != result.NoradIdStr {
 		return TLE{}, errors.New("line 1 and line 2 NORAD IDs do not match")
 	}
@@ -217,17 +151,17 @@ func Parse(txt string) (TLE, error) {
 		return TLE{}, err
 	}
 
-	result.MeanAnomalyDegrees, err = strconv.ParseFloat(result.Line2[43:51], 64)
+	result.MeanAnomalyDegrees, err = strconv.ParseFloat(strings.TrimSpace(result.Line2[43:51]), 64)
 	if err != nil {
 		return TLE{}, err
 	}
 
-	result.MeanMotion, err = strconv.ParseFloat(result.Line2[52:63], 64)
+	result.MeanMotion, err = strconv.ParseFloat(strings.TrimSpace(result.Line2[52:63]), 64)
 	if err != nil {
 		return TLE{}, err
 	}
 
-	result.EpochRevolutionCount, err = strconv.Atoi(result.Line2[63:68])
+	result.EpochRevolutionCount, err = strconv.Atoi(strings.TrimSpace(result.Line2[63:68]))
 	if err != nil {
 		return TLE{}, err
 	}
@@ -269,7 +203,7 @@ func convertYearAndDayToDate(twoDigitYear, day string) (time.Time, error) {
 	nanosecondsFloat := dayFloat * 24.0 * 60.0 * 60.0 * 1e9
 	ns := time.Duration(nanosecondsFloat)
 
-	// subtract a day the .Date adds a day
+	// subtract a day because the .Date adds a day
 	return time.Date(year, 1, 1, 0, 0, 0, 0, time.UTC).Add(ns).Add(-time.Hour * 24), nil
 }
 
@@ -341,4 +275,70 @@ func parseBStar(bstar string) (float64, error) {
 	parseableStr := sign + "0." + val + "e" + exponent
 
 	return strconv.ParseFloat(parseableStr, 64)
+}
+
+func parseNoradId(s string) (int, error) {
+	if _, err := strconv.Atoi(string(s[0])); err == nil {
+		noradInt, err := strconv.Atoi(s)
+		if err != nil {
+			return 0, err
+		}
+		return noradInt, nil
+	} else {
+		rest := s[1:]
+		firstChar := s[0]
+		switch firstChar {
+		// I and O are not used
+		case 'A':
+			return strconv.Atoi("10" + rest)
+		case 'B':
+			return strconv.Atoi("11" + rest)
+		case 'C':
+			return strconv.Atoi("12" + rest)
+		case 'D':
+			return strconv.Atoi("13" + rest)
+		case 'E':
+			return strconv.Atoi("14" + rest)
+		case 'F':
+			return strconv.Atoi("15" + rest)
+		case 'G':
+			return strconv.Atoi("16" + rest)
+		case 'H':
+			return strconv.Atoi("17" + rest)
+		case 'J':
+			return strconv.Atoi("18" + rest)
+		case 'K':
+			return strconv.Atoi("19" + rest)
+		case 'L':
+			return strconv.Atoi("20" + rest)
+		case 'M':
+			return strconv.Atoi("21" + rest)
+		case 'N':
+			return strconv.Atoi("22" + rest)
+		case 'P':
+			return strconv.Atoi("23" + rest)
+		case 'Q':
+			return strconv.Atoi("24" + rest)
+		case 'R':
+			return strconv.Atoi("25" + rest)
+		case 'S':
+			return strconv.Atoi("26" + rest)
+		case 'T':
+			return strconv.Atoi("27" + rest)
+		case 'U':
+			return strconv.Atoi("28" + rest)
+		case 'V':
+			return strconv.Atoi("29" + rest)
+		case 'W':
+			return strconv.Atoi("30" + rest)
+		case 'X':
+			return strconv.Atoi("31" + rest)
+		case 'Y':
+			return strconv.Atoi("32" + rest)
+		case 'Z':
+			return strconv.Atoi("33" + rest)
+		default:
+			return 0, errors.New("invalid NORAD ID Alpha-5 format")
+		}
+	}
 }
